@@ -1,112 +1,74 @@
 import streamlit as st
-import datetime
 import time
 
-# --- CLASSE ORIGINAL ADAPTADA ---
-class FinBot:
-    def __init__(self, nome_cliente):
-        self.nome_cliente = nome_cliente
-        # Simulação de Base de Dados
-        self.dados_cliente = {
-            "saldo": 4500.00,
-            "limite_credito": 12000.00,
-            "gastos_mes": 1350.50
-        }
-        
-    def _formatar_moeda(self, valor):
-        return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+# --- CONFIGURAÇÃO E ESTILO ---
+st.set_page_config(page_title="FinBot Cofrinho", page_icon="💰")
 
-    def consultar_saldo(self):
-        saldo = self._formatar_moeda(self.dados_cliente['saldo'])
-        return f"Seu saldo atual em conta corrente é de **{saldo}**."
+# --- INICIALIZAÇÃO DE DADOS (Persistência no Navegador) ---
+if 'saldo_conta' not in st.session_state:
+    st.session_state.saldo_conta = 4500.00
+if 'saldo_cofrinho' not in st.session_state:
+    st.session_state.saldo_cofrinho = 0.0
+if 'messages' not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": "Olá! Sou seu FinBot. Vamos organizar suas economias hoje?"}]
 
-    def simular_emprestimo(self, valor, meses):
-        taxa = 0.025
-        if valor > self.dados_cliente['limite_credito']:
-            return "⚠️ O valor solicitado está acima do seu limite pré-aprovado. Podemos analisar uma proposta personalizada no menu 'Gerente'."
-        
-        total_com_juros = valor * (1 + taxa * meses)
-        parcela = total_com_juros / meses
-        
-        return (
-            f"📊 **Simulação de Empréstimo**\n\n"
-            f"- Valor solicitado: {self._formatar_moeda(valor)}\n"
-            f"- Prazo: {meses} meses\n"
-            f"- Parcela estimada: {self._formatar_moeda(parcela)}\n"
-            f"- Total final: {self._formatar_moeda(total_com_juros)}\n\n"
-            f"*(Nota: Taxas sujeitas a análise de crédito)*"
-        )
-
-    def explicar_produto(self, produto):
-        produtos = {
-            "cdb": "O CDB (Certificado de Depósito Bancário) é um investimento de renda fixa onde você empresta dinheiro ao banco em troca de juros. É seguro e conta com garantia do FGC.",
-            "lci": "A LCI (Letra de Crédito Imobiliário) é isenta de Imposto de Renda para pessoas físicas e ajuda a financiar o setor imobiliário.",
-            "pix": "O Pix é o sistema de pagamentos instantâneos do Banco Central, funcionando 24/7 com liquidação em segundos."
-        }
-        return produtos.get(produto.lower(), "Desculpe, ainda não tenho informações detalhadas sobre este produto específico.")
-
-    def processar_mensagem(self, entrada_usuario):
-        entrada_lower = entrada_usuario.lower()
-        
-        if "saldo" in entrada_lower or "quanto tenho" in entrada_lower:
-            return self.consultar_saldo()
-        
-        elif "simular" in entrada_lower or "emprestimo" in entrada_lower:
-            try:
-                numeros = [int(s) for s in entrada_lower.split() if s.isdigit()]
-                if len(numeros) >= 2:
-                    valor = numeros[0] if numeros[0] > 100 else numeros[1]
-                    meses = numeros[1] if numeros[0] > 100 else numeros[0]
-                    return self.simular_emprestimo(valor, meses)
-                else:
-                    return "Para simular, preciso que você diga o valor e a quantidade de meses. Ex: 'Simular 5000 em 12 meses'."
-            except:
-                return "Entendi que você quer simular um empréstimo. Por favor, informe o valor e o prazo."
-
-        elif "o que é" in entrada_lower or "explica" in entrada_lower:
-            termo = entrada_lower.split()[-1].replace("?", "")
-            return self.explicar_produto(termo)
-            
-        elif "obrigado" in entrada_lower or "tchau" in entrada_lower:
-            return f"Foi um prazer ajudar, {self.nome_cliente}! Conte sempre conosco. 👋"
-
+# --- BARRA LATERAL (UX: Resumo Financeiro) ---
+with st.sidebar:
+    st.title("🏦 Meu Painel")
+    st.metric("Saldo em Conta", f"R$ {st.session_state.saldo_conta:,.2f}")
+    st.metric("Guardado no Cofrinho 🐷", f"R$ {st.session_state.saldo_cofrinho:,.2f}")
+    
+    st.divider()
+    st.subheader("Ajustar Cofrinho")
+    valor_add = st.number_input("Quanto deseja guardar?", min_value=0.0, step=50.0)
+    if st.button("Confirmar Depósito"):
+        if valor_add <= st.session_state.saldo_conta:
+            st.session_state.saldo_conta -= valor_add
+            st.session_state.saldo_cofrinho += valor_add
+            st.success(f"R$ {valor_add} guardados com sucesso!")
+            st.rerun()
         else:
-            return f"Entendi sua dúvida sobre '{entrada_usuario}'. Como sou um assistente focado em segurança, recomendo verificar no app ou falar com seu gerente!"
+            st.error("Saldo insuficiente na conta corrente.")
 
-# --- INTERFACE STREAMLIT ---
+# --- LÓGICA DE RENDIMENTO ---
+def calcular_rendimento(valor, meses):
+    taxa_mensal = 0.0085
+    valor_final = valor * (1 + taxa_mensal) ** meses
+    lucro = valor_final - valor
+    return valor_final, lucro
+# --- INTERFACE DE CHAT ---
+st.title("🤖 FinnBot: Assistente & Cofrinho")
 
-st.set_page_config(page_title="FinnBot AI", page_icon="🏦")
-
-st.title("🏦 FinnBot Assistant")
-st.caption("Sua inteligência financeira personalizada")
-
-# Inicialização do Bot e Histórico na Sessão
-if "bot" not in st.session_state:
-    st.session_state.bot = FinBot("Usuário")
-
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Olá! Sou sua IA financeira. Como posso ajudar você hoje?"}
-    ]
-
-# Exibição do histórico de mensagens
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-# Entrada de Chat
-if prompt := st.chat_input("Ex: Qual meu saldo? ou Simular 5000 em 12 meses"):
-    # Adiciona mensagem do usuário
+if prompt := st.chat_input("Ex: 'Quanto vai render 1000 em 12 meses?'"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
-    # Processamento da Resposta
     with st.chat_message("assistant"):
-        with st.spinner("Pensando..."):
-            time.sleep(0.6) # Simula o "typing" que você tinha no console
-            resposta = st.session_state.bot.processar_mensagem(prompt)
-            st.write(resposta)
-            st.session_state.messages.append({"role": "assistant", "content": resposta})
+        p_lower = prompt.lower()
 
+        if "render" in p_lower or "rendimento" in p_lower:
+            numeros = [float(s) for s in p_lower.replace(",", ".").split() if s.replace(".", "").isdigit()]
+            
+            if len(numeros) >= 2:
+                valor_sim = numeros[0]
+                meses_sim = int(numeros[1])
+                v_final, v_lucro = calcular_rendimento(valor_sim, meses_sim)
+                
+                resposta = (f"📈 **Projeção de Rendimento (CDB 100% CDI):**\n\n"
+                            f"Se você guardar **R$ {valor_sim:,.2f}** por **{meses_sim} meses**:\n"
+                            f"- Você terá um total de: **R$ {v_final:,.2f}**\n"
+                            f"- Seu dinheiro rendeu: **R$ {v_lucro:,.2f}**")
+            else:
+                resposta = "Para calcular o rendimento, diga o valor e o tempo. Ex: 'Quanto rende 500 em 6 meses?'"
+        
+        elif "saldo" in p_lower:
+            resposta = f"Você tem R$ {st.session_state.saldo_conta:,.2f} na conta e R$ {st.session_state.saldo_cofrinho:,.2f} no cofrinho."
+        
+        else:
+            resposta = "Posso te ajudar a calcular rendimentos ou gerenciar seu cofrinho na barra lateral!"
 
-
-
+        st.write(resposta)
+        st.session_state.messages.append({"role": "assistant", "content": resposta})
