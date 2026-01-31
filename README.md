@@ -1,53 +1,45 @@
-🏦 FinBot: Assistente Virtual com IA Generativa para Finanças
-O FinBot é uma solução de inteligência artificial voltada para o setor bancário que une a precisão de algoritmos financeiros com a flexibilidade da IA Generativa. O projeto foi desenvolvido para oferecer uma experiência de autoatendimento fluida, educativa e segura.
+# 🏦 FinBot AI: Assistente Financeiro Inteligente
 
-🎯 Objetivo
-Resolver a lacuna entre a complexidade do mercado financeiro e o entendimento do usuário final, utilizando Processamento de Linguagem Natural (PLN) para fornecer suporte, simulações e educação financeira em tempo real.
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-red)
+![Gemini](https://img.shields.io/badge/AI-Google%20Gemini-orange)
+![Status](https://img.shields.io/badge/Status-Funcional-brightgreen)
 
-🚀 Funcionalidades Principais
-💳 Consulta de Saldo e Limites: Acesso rápido a dados financeiros com formatação monetária padrão (BRL).
+O **FinBot** é uma aplicação web de inteligência artificial voltada para o setor de finanças pessoais. Ele une a precisão de um painel de controle bancário com a flexibilidade da IA Generativa (Google Gemini) para oferecer uma experiência de autoatendimento fluida, educativa e segura.
 
-📊 Simulador de Empréstimos: Motor de cálculo que valida solicitações contra limites pré-aprovados e projeta parcelas com juros.
+## 🎯 Objetivo
+Democratizar o entendimento financeiro. O FinBot preenche a lacuna entre planilhas complexas e o usuário final, utilizando uma interface visual intuitiva e um chat inteligente para fornecer suporte, cálculos de rendimento e educação financeira em tempo real.
 
-📚 FAQ Inteligente: Explicação de produtos financeiros (CDB, LCI, PIX) em linguagem acessível.
+## 🚀 Funcionalidades Principais
 
-🧠 Memória de Contexto: Capacidade de manter o histórico da conversa para respostas personalizadas durante a sessão.
+### 🖥️ Interface Interativa (Streamlit)
+- **Painel Financeiro (Sidebar):** Controle visual de saldo em conta corrente e "Cofrinho".
+- **Gestão de Ativos:** Botões rápidos para depositar, guardar dinheiro no cofrinho ou resgatar valores.
+- **Feedback Visual:** Indicadores de sucesso e atualizações de saldo em tempo real.
 
-🤖 IA Híbrida: Uso de lógica determinística para números e generativa para interação humana.
+### 🤖 Inteligência Híbrida
+- **Lógica Determinística:** Cálculos exatos para transações (saques, depósitos) e projeções matemáticas de juros compostos.
+- **IA Generativa (Gemini 1.5/2.5):** Um "cérebro" treinado com contexto financeiro para responder dúvidas como "Como juntar 3 mil reais?" ou explicar termos como CDB e LCI.
+- **Memória de Contexto:** O bot "lembra" do saldo atual do usuário durante a conversa para dar conselhos personalizados.
 
-🛠️ Tecnologias Utilizadas
-Python 3.x: Linguagem base para toda a lógica de backend.
+### 🛡️ UX & Segurança
+- **Validação de Erros:** Impede saques maiores que o saldo ou entradas inválidas.
+- **Conexão Blindada:** Sistema de reconexão automática que alterna entre modelos de IA (Flash/Pro) para garantir que o chat nunca fique fora do ar.
 
-Lógica de Dicionários (Hash Maps): Para simulação eficiente de banco de dados e mapeamento de intenções.
+## 🛠️ Tecnologias Utilizadas
 
-NLU (Natural Language Understanding): Implementação de lógica de detecção de intenção por palavras-chave e contexto.
+* **[Python 3.x](https://www.python.org/):** Linguagem base para toda a lógica de backend.
+* **[Streamlit](https://streamlit.io/):** Framework para criação da interface web interativa e responsiva.
+* **[Google Generative AI](https://ai.google.dev/):** Integração com modelos LLM (Gemini 1.5 Flash / 2.5) para processamento de linguagem natural.
+* **Session State:** Gerenciamento de persistência de dados (saldo e histórico de chat) durante a sessão do usuário.
 
-UX Design: Aplicação de princípios de tom de voz, tempos de resposta humanizados e tratamento de erros amigável.
+## 📂 Estrutura do Projeto
 
-📂 Estrutura do Projeto
-main.py: Ponto de entrada da aplicação e interface de linha de comando.
-
-finbot_engine.py: Motor lógico contendo as classes de simulação e processamento de texto.
-
-database_mock.py: Simulação de estrutura de dados de clientes e produtos.
-
-🧠 Como Funciona (Arquitetura)
-O fluxo de interação segue três camadas:
-
-Entrada do Usuário: Captura do texto via console ou interface.
-
-Roteador de Intenção: O Python identifica se o usuário quer um Cálculo (Saldo/Simulação) ou uma Explicação (Educação Financeira).
-
-Saída Humanizada: A resposta é formatada com regras de UX para garantir clareza e empatia.
-
-📝 Exemplo de Uso
-Usuário: "O que é um CDB e quanto eu tenho na conta?"
-
-FinBot: "O CDB é um investimento onde você empresta dinheiro ao banco... Sobre sua conta, seu saldo atual é de R$ 4.500,00. Posso te ajudar a investir parte disso?"
-
-🌟 Diferenciais de UX aplicados
-Prevenção de Erros: O sistema valida valores antes de processar cálculos.
-
-Visibilidade do Sistema: Mensagens de "processando" e "digitando" reduzem a ansiedade do usuário.
-
-Estética e Minimalismo: Informações apresentadas de forma organizada com uso de Markdown para destaque.
+```text
+📁 finbot/
+│
+├── app.py                # Código principal (Frontend + Backend + Lógica IA)
+├── requirements.txt      # Dependências (streamlit, google-generativeai)
+├── .streamlit/
+│   └── secrets.toml      # (Local) Onde fica a API Key do Google
+└── README.md             # Documentação do projeto
