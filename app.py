@@ -24,10 +24,6 @@ def get_model():
 # --- INICIALIZAÇÃO DE ESTADO ---
 if 'saldo_conta' not in st.session_state: st.session_state.saldo_conta = 0.0
 if 'saldo_cofrinho' not in st.session_state: st.session_state.saldo_cofrinho = 0.0
-# Estados para Metas
-if 'nome_meta' not in st.session_state: st.session_state.nome_meta = ""
-if 'valor_meta' not in st.session_state: st.session_state.valor_meta = 0.0
-
 if 'messages' not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "Olá! Sou seu FinnBot. Como posso ajudar?"}]
 if 'historico_conversas' not in st.session_state:
@@ -54,7 +50,7 @@ with st.sidebar:
             st.rerun()
     
     with col_n2:
-        if st.button("🗑️ Limpar", use_container_width=True):
+        if st.button("🗑️ Limpar Tudo", use_container_width=True):
             st.session_state.historico_conversas = []
             st.session_state.messages = [{"role": "assistant", "content": "Histórico apagado. Vamos recomeçar?"}]
             st.rerun()
@@ -65,20 +61,6 @@ with st.sidebar:
             if st.button(conversa["label"], key=f"h_{i}", use_container_width=True):
                 st.session_state.messages = list(conversa["chats"])
                 st.rerun()
-
-    st.divider()
-
-    # --- NOVO: SEÇÃO DE METAS ---
-    st.subheader("🎯 Minha Meta")
-    with st.expander("Configurar Objetivo"):
-        st.session_state.nome_meta = st.text_input("Nome:", value=st.session_state.nome_meta, placeholder="Ex: Viagem")
-        st.session_state.valor_meta = st.number_input("Alvo (R$):", min_value=0.0, value=st.session_state.valor_meta)
-    
-    if st.session_state.valor_meta > 0:
-        progresso = min(st.session_state.saldo_cofrinho / st.session_state.valor_meta, 1.0)
-        st.write(f"**{st.session_state.nome_meta}**")
-        st.progress(progresso)
-        st.caption(f"{progresso*100:.1f}% concluído")
 
     st.divider()
 
@@ -125,10 +107,7 @@ if prompt := st.chat_input("Diga algo..."):
         with st.spinner("Pensando..."):
             try:
                 # Prepara contexto e histórico
-                ctx = (f"Você é o FinnBot. Saldo: R$ {st.session_state.saldo_conta:.2f}. "
-                       f"Meta: {st.session_state.nome_meta} (Alvo: R$ {st.session_state.valor_meta:.2f}). "
-                       f"Já guardou R$ {st.session_state.saldo_cofrinho:.2f}.")
-                
+                ctx = f"Você é o FinnBot. Saldo: R$ {st.session_state.saldo_conta:.2f}."
                 hist = []
                 for m in st.session_state.messages[-6:]:
                     r = "model" if m["role"] == "assistant" else "user"
