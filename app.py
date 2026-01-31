@@ -13,22 +13,53 @@ if 'messages' not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "Olá! Sou seu FinBot. Vamos organizar suas economias hoje?"}]
 
 # --- BARRA LATERAL (UX: Resumo Financeiro) ---
+# --- BARRA LATERAL (UX: Resumo Financeiro) ---
 with st.sidebar:
     st.title("🏦 Meu Painel")
     st.metric("Saldo em Conta", f"R$ {st.session_state.saldo_conta:,.2f}")
     st.metric("Guardado no Cofrinho 🐷", f"R$ {st.session_state.saldo_cofrinho:,.2f}")
     
     st.divider()
-    st.subheader("Ajustar Cofrinho")
-    valor_add = st.number_input("Quanto deseja guardar?", min_value=0.0, step=50.0)
-    if st.button("Confirmar Depósito"):
-        if valor_add <= st.session_state.saldo_conta:
-            st.session_state.saldo_conta -= valor_add
-            st.session_state.saldo_cofrinho += valor_add
-            st.success(f"R$ {valor_add} guardados com sucesso!")
-            st.rerun()
-        else:
-            st.error("Saldo insuficiente na conta corrente.")
+    
+    # --- NOVO: ADICIONAR SALDO À CONTA ---
+    st.subheader("Receber Saldo")
+    valor_input_conta = st.number_input("Quanto deseja depositar na conta?", min_value=0.0, step=100.0, key="add_conta")
+    if st.button("Depositar na Conta"):
+        st.session_state.saldo_conta += valor_input_conta
+        st.success(f"R$ {valor_input_conta:,.2f} adicionados à conta!")
+        time.sleep(1) # Pausa curta para o usuário ler a mensagem
+        st.rerun()
+
+    st.divider()
+
+    # --- AJUSTAR COFRINHO (GUARDAR) ---
+    st.subheader("Gerenciar Cofrinho")
+    valor_cofrinho = st.number_input("Valor da operação (Cofrinho):", min_value=0.0, step=50.0, key="val_cofrinho")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("Guardar 📥"):
+            if valor_cofrinho <= st.session_state.saldo_conta:
+                st.session_state.saldo_conta -= valor_cofrinho
+                st.session_state.saldo_cofrinho += valor_cofrinho
+                st.success("Guardado!")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.error("Saldo insuficiente.")
+
+    with col2:
+        # --- NOVO: RESGATAR DO COFRINHO ---
+        if st.button("Resgatar 📤"):
+            if valor_cofrinho <= st.session_state.saldo_cofrinho:
+                st.session_state.saldo_cofrinho -= valor_cofrinho
+                st.session_state.saldo_conta += valor_cofrinho
+                st.success("Resgatado!")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.error("Não há esse valor no cofrinho.")
 
 # --- LÓGICA DE RENDIMENTO ---
 def calcular_rendimento(valor, meses):
@@ -72,4 +103,5 @@ if prompt := st.chat_input("Ex: 'Quanto vai render 1000 em 12 meses?'"):
 
         st.write(resposta)
         st.session_state.messages.append({"role": "assistant", "content": resposta})
+
 
