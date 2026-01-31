@@ -40,47 +40,47 @@ if 'saldo_cofrinho' not in st.session_state:
     st.session_state.saldo_cofrinho = 0.0
 if 'messages' not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Olá! Sou seu FinnBot (v2.5). Como posso ajudar suas finanças hoje?"}
+        {"role": "assistant", "content": "Olá! Sou seu FinnBot. Pergunte sobre suas finanças."}
     ]
 
 # --- TENTA CONECTAR ---
 model, nome_conectado = get_model()
 
 # --- BARRA LATERAL ---
-with st.sidebar:
-    st.title("🏦 Meu Painel")
-    st.success(f"⚡ Conectado: {nome_conectado}") # Mostra que funcionou!
-    
-    st.metric("Saldo em Conta", f"R$ {st.session_state.saldo_conta:,.2f}")
-    st.metric("No Cofrinho 🐷", f"R$ {st.session_state.saldo_cofrinho:,.2f}")
-    
-    st.divider()
-    
-    st.subheader("Depositar")
-    valor_dep = st.number_input("Valor:", min_value=0.0, step=100.0, key="dep")
-    if st.button("Confirmar Depósito"):
-        st.session_state.saldo_conta += valor_dep
-        st.success("Saldo atualizado!")
-        time.sleep(0.5)
-        st.rerun()
-
-    st.divider()
-
-    st.subheader("Cofrinho")
-    valor_cofre = st.number_input("Operação cofrinho:", min_value=0.0, step=50.0, key="cof")
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("Guardar 📥"):
-            if valor_cofre <= st.session_state.saldo_conta:
-                st.session_state.saldo_conta -= valor_cofre
-                st.session_state.saldo_cofrinho += valor_cofre
-                st.rerun()
-    with c2:
-        if st.button("Resgatar 📤"):
-            if valor_cofre <= st.session_state.saldo_cofrinho:
-                st.session_state.saldo_cofrinho -= valor_cofre
-                st.session_state.saldo_conta += valor_cofre
-                st.rerun()
+# with st.sidebar:
+#    st.title("🏦 Meu Painel")
+#    st.success(f"⚡ Conectado: {nome_conectado}") # Mostra que funcionou!
+#    
+#   st.metric("Saldo em Conta", f"R$ {st.session_state.saldo_conta:,.2f}")
+#   st.metric("No Cofrinho 🐷", f"R$ {st.session_state.saldo_cofrinho:,.2f}")
+#   
+#   st.divider()
+#   
+#   st.subheader("Depositar")
+#   valor_dep = st.number_input("Valor:", min_value=0.0, step=100.0, key="dep")
+#   if st.button("Confirmar Depósito"):
+#       st.session_state.saldo_conta += valor_dep
+#       st.success("Saldo atualizado!")
+#        time.sleep(0.5)
+#       st.rerun()
+#
+#   st.divider()
+#
+#   st.subheader("Cofrinho")
+#   valor_cofre = st.number_input("Operação cofrinho:", min_value=0.0, step=50.0, key="cof")
+#   c1, c2 = st.columns(2)
+#   with c1:
+#       if st.button("Guardar 📥"):
+#           if valor_cofre <= st.session_state.saldo_conta:
+#               st.session_state.saldo_conta -= valor_cofre
+#               st.session_state.saldo_cofrinho += valor_cofre
+#               st.rerun()
+#   with c2:
+#       if st.button("Resgatar 📤"):
+#           if valor_cofre <= st.session_state.saldo_cofrinho:
+ #               st.session_state.saldo_cofrinho -= valor_cofre
+  #              st.session_state.saldo_conta += valor_cofre
+   #             st.rerun()
 
 # --- CHAT ---
 st.title("🤖 FinnBot: Assistente Financeiro")
@@ -88,7 +88,7 @@ st.title("🤖 FinnBot: Assistente Financeiro")
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-if prompt := st.chat_input("Ex: Como juntar 3 mil em 8 meses?"):
+if prompt := st.chat_input("Como posso ajudar suas finanças hoje?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
@@ -127,3 +127,4 @@ if prompt := st.chat_input("Ex: Como juntar 3 mil em 8 meses?"):
 
         st.write(resposta)
         st.session_state.messages.append({"role": "assistant", "content": resposta})
+
