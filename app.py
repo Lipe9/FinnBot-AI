@@ -97,18 +97,28 @@ if prompt := st.chat_input("Pergunte sobre saldo, rendimento ou dicas financeira
                             f"Lucro estimado: **R$ {v_lucro:,.2f}**")
             else:
                 resposta = "Para calcular, informe o valor e o tempo. Ex: 'Quanto rende 1000 em 12 meses?'"
-        
-        # 2. IA Generativa com Memória de Contexto
+    # 2. IA Generativa com Memória de Contexto
         else:
             with st.spinner("Analisando com IA..."):
                 try:
-                    # Preparamos a memória para a IA: as últimas mensagens + o contexto atual
                     instrucoes_ia = (
-                        f"Você é o FinnBot, um assistente de finanças pessoais. "
-                        f"O saldo atual do usuário é R$ {st.session_state.saldo_conta:.2f}. "
-                        f"O valor no cofrinho é R$ {st.session_state.saldo_cofrinho:.2f}. "
-                        "Responda de forma prestativa, curta e baseada nos dados fornecidos."
+                        f"Você é o FinnBot. Saldo conta: R$ {st.session_state.saldo_conta:.2f}. "
+                        f"No cofrinho: R$ {st.session_state.saldo_cofrinho:.2f}."
                     )
+                    
+                    history = []
+                    for m in st.session_state.messages[-5:]:
+                        # Corrigindo: Gemini exige 'user' e 'model'
+                        role = "user" if m["role"] == "user" else "model"
+                        history.append({"role": role, "parts": [m["content"]]})
+                    
+                    chat = model.start_chat(history=history[:-1])
+                    response = chat.send_message(f"{instrucoes_ia}\n\nPergunta: {prompt}")
+                    resposta = response.text
+                except Exception as e:
+                    # ISSO VAI MOSTRAR O ERRO REAL NO SITE
+                    st.error(f"Erro na API: {e}")
+                    resposta = "Não consegui falar com meu cérebro de IA agora."
                     
                     # Criamos o histórico formatado para o Gemini
                     history = []
@@ -125,3 +135,4 @@ if prompt := st.chat_input("Pergunte sobre saldo, rendimento ou dicas financeira
 
         st.write(resposta)
         st.session_state.messages.append({"role": "assistant", "content": resposta})
+
