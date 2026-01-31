@@ -1,10 +1,9 @@
 import streamlit as st
 import time
 import google.generativeai as genai
-import pandas as pd
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="FinnBot AI Pro", page_icon="🏦", layout="wide")
+st.set_page_config(page_title="FinnBot AI", page_icon="🏦")
 
 # --- FUNÇÃO DE CONEXÃO ---
 def get_model():
@@ -12,51 +11,55 @@ def get_model():
         api_key = st.secrets["GOOGLE_API_KEY"]
         genai.configure(api_key=api_key)
     except Exception:
-        st.error("❌ Erro: Chave de API não encontrada nos Secrets.")
+        st.error("❌ Erro: Chave de API não encontrada.")
         st.stop()
     
     modelos = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest']
     for nome in modelos:
         try:
-            m = genai.GenerativeModel(nome)
-            return m, nome
+            return genai.GenerativeModel(nome), nome
         except: continue
     st.stop()
 
 # --- INICIALIZAÇÃO DE ESTADO ---
 if 'saldo_conta' not in st.session_state: st.session_state.saldo_conta = 0.0
 if 'saldo_cofrinho' not in st.session_state: st.session_state.saldo_cofrinho = 0.0
-if 'extrato' not in st.session_state: st.session_state.extrato = []
-if 'nome_meta' not in st.session_state: st.session_state.nome_meta = "Minha Meta"
+# Estados para Metas
+if 'nome_meta' not in st.session_state: st.session_state.nome_meta = ""
 if 'valor_meta' not in st.session_state: st.session_state.valor_meta = 0.0
+
 if 'messages' not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Olá! Sou seu FinnBot Pro. Vamos organizar suas finanças?"}]
-if 'historico_conversas' not in st.session_state: st.session_state.historico_conversas = []
+    st.session_state.messages = [{"role": "assistant", "content": "Olá! Sou seu FinnBot. Como posso ajudar?"}]
+if 'historico_conversas' not in st.session_state:
+    st.session_state.historico_conversas = []
 
 model, nome_conectado = get_model()
 
-# --- BARRA LATERAL (Sidebar) ---
+# --- BARRA LATERAL ---
 with st.sidebar:
-    st.title("🏦 FinnBot Dashboard")
-    st.caption(f"Status: {nome_conectado}")
+    st.title("🏦 Meu Painel")
+    st.caption(f"Conectado: {nome_conectado}")
 
-    # --- NOVO CHAT / LIMPAR ---
-    c1, c2 = st.columns(2)
-    with c1:
+    # --- SEÇÃO DE CHAT ---
+    col_n1, col_n2 = st.columns(2)
+    with col_n1:
         if st.button("➕ Novo Chat", use_container_width=True):
             if len(st.session_state.messages) > 1:
-                resumo_texto = st.session_state.messages[1]['content'][:15]
+                resumo = st.session_state.messages[1]["content"][:20]
                 st.session_state.historico_conversas.append({
-                    "label": f"🕒 {time.strftime('%H:%M')} - {resumo_texto}...",
+                    "label": f"🕒 {time.strftime('%H:%M')} - {resumo}...",
                     "chats": list(st.session_state.messages)
                 })
-            st.session_state.messages = [{"role": "assistant", "content": "Novo chat iniciado!"}]
+            st.session_state.messages = [{"role": "assistant", "content": "Novo chat! Como posso ajudar?"}]
             st.rerun()
-    with c2:
-        if st.button("🗑️ Limpar Hist.", use_container_width=True):
+    
+    with col_n2:
+        if st.button("🗑️ Limpar", use_container_width=True):
             st.session_state.historico_conversas = []
+            st.session_state.messages = [{"role": "assistant", "content": "Histórico apagado. Vamos recomeçar?"}]
             st.rerun()
 
+    # MENU DE HISTÓRICO
     with st.expander("📜 Conversas Anteriores"):
         for i, conversa in enumerate(reversed(st.session_state.historico_conversas)):
             if st.button(conversa["label"], key=f"h_{i}", use_container_width=True):
@@ -64,39 +67,78 @@ with st.sidebar:
                 st.rerun()
 
     st.divider()
-    st.metric("Conta Corrente", f"R$ {st.session_state.saldo_conta:,.2f}")
-    st.metric("Cofrinho 🐷", f"R$ {st.session_state.saldo_cofrinho:,.2f}")
 
-    if st.session_state.saldo_conta > 0 or st.session_state.saldo_cofrinho > 0:
-        df_grafico = pd.DataFrame({
-            "Local": ["Conta", "Cofrinho"],
-            "Valor": [st.session_state.saldo_conta, st.session_state.saldo_cofrinho]
-        })
-        st.bar_chart(df_grafico.set_index("Local"))
+    # --- NOVO: SEÇÃO DE METAS ---
+    st.subheader("🎯 Minha Meta")
+    with st.expander("Configurar Objetivo"):
+        st.session_state.nome_meta = st.text_input("Nome:", value=st.session_state.nome_meta, placeholder="Ex: Viagem")
+        st.session_state.valor_meta = st.number_input("Alvo (R$):", min_value=0.0, value=st.session_state.valor_meta)
+    
+    if st.session_state.valor_meta > 0:
+        progresso = min(st.session_state.saldo_cofrinho / st.session_state.valor_meta, 1.0)
+        st.write(f"**{st.session_state.nome_meta}**")
+        st.progress(progresso)
+        st.caption(f"{progresso*100:.1f}% concluído")
 
     st.divider()
-    st.subheader("💳 Movimentar")
-    valor_op = st.number_input("Valor (R$):", min_value=0.0, step=50.0)
+
+    # --- SEÇÃO FINANCEIRA ---
+    st.metric("Saldo em Conta", f"R$ {st.session_state.saldo_conta:,.2f}")
+    st.metric("No Cofrinho 🐷", f"R$ {st.session_state.saldo_cofrinho:,.2f}")
+
+    st.subheader("💳 Transações")
+    valor = st.number_input("Valor da operação:", min_value=0.0, step=50.0)
     
     if st.button("💰 Depositar na Conta", use_container_width=True):
-        st.session_state.saldo_conta += valor_op
-        st.session_state.extrato.append(f"🟢 +R$ {valor_op:.2f} (Depósito)")
-        st.rerun()
+        st.session_state.saldo_conta += valor
+        st.success("Valor depositado!")
+        time.sleep(0.5); st.rerun()
 
-    col_t1, col_t2 = st.columns(2)
-    with col_t1:
+    st.write("---")
+    col_c1, col_c2 = st.columns(2)
+    with col_c1:
         if st.button("📥 Guardar", use_container_width=True):
-            if valor_op <= st.session_state.saldo_conta:
-                st.session_state.saldo_conta -= valor_op
-                st.session_state.saldo_cofrinho += valor_op
-                st.session_state.extrato.append(f"📥 -R$ {valor_op:.2f} (Economia)")
+            if valor <= st.session_state.saldo_conta:
+                st.session_state.saldo_conta -= valor
+                st.session_state.saldo_cofrinho += valor
                 st.rerun()
-    with col_t2:
+            else: st.error("Saldo insuficiente")
+    with col_c2:
         if st.button("📤 Resgatar", use_container_width=True):
-            if valor_op <= st.session_state.saldo_cofrinho:
-                st.session_state.saldo_cofrinho -= valor_op
-                st.session_state.saldo_conta += valor_op
-                st.session_state.extrato.append(f"📤 +R$ {valor_op:.2f} (Resgate)")
+            if valor <= st.session_state.saldo_cofrinho:
+                st.session_state.saldo_cofrinho -= valor
+                st.session_state.saldo_conta += valor
                 st.rerun()
+            else: st.error("Cofrinho vazio")
 
-# --- ÁREA PRINC
+# --- INTERFACE DE CHAT ---
+st.title("🤖 FinnBot: Assistente Financeiro")
+
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
+
+if prompt := st.chat_input("Diga algo..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Pensando..."):
+            try:
+                # Prepara contexto e histórico
+                ctx = (f"Você é o FinnBot. Saldo: R$ {st.session_state.saldo_conta:.2f}. "
+                       f"Meta: {st.session_state.nome_meta} (Alvo: R$ {st.session_state.valor_meta:.2f}). "
+                       f"Já guardou R$ {st.session_state.saldo_cofrinho:.2f}.")
+                
+                hist = []
+                for m in st.session_state.messages[-6:]:
+                    r = "model" if m["role"] == "assistant" else "user"
+                    hist.append({"role": r, "parts": [m["content"]]})
+                
+                chat = model.start_chat(history=hist[:-1])
+                response = chat.send_message(f"{ctx}\n\nPergunta: {prompt}")
+                resposta = response.text
+            except:
+                resposta = "Estou com instabilidade. Tente novamente."
+
+        st.write(resposta)
+        st.session_state.messages.append({"role": "assistant", "content": resposta})
