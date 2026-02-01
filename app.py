@@ -5,6 +5,32 @@ import google.generativeai as genai
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="FinnBot AI", page_icon="🏦", layout="centered")
 
+# --- CSS PARA FIXAR O RODAPÉ NO FINAL ---
+st.markdown("""
+    <style>
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: transparent;
+        color: gray;
+        text-align: center;
+        padding: 10px;
+        font-size: 12px;
+        z-index: 100;
+    }
+    /* Ajuste para a caixa de chat não cobrir o rodapé se necessário */
+    .stChatInputContainer {
+        bottom: 40px !important;
+    }
+    </style>
+    <div class="footer">
+        <hr style="border: 0.5px solid #333; width: 80%; margin: auto; margin-bottom: 5px;">
+        Developed by Felipe Silva.
+    </div>
+    """, unsafe_allow_html=True)
+
 # --- FUNÇÃO DE CONEXÃO ---
 def get_model():
     try:
@@ -14,9 +40,8 @@ def get_model():
         st.error("❌ Erro: Chave de API não encontrada nos Secrets.")
         st.stop()
 
-    # PRIORIDADE: GEMINI 2.5 FLASH conforme solicitado
     modelos_para_tentar = [
-        'gemini-2.5-flash',      # O modelo que você usava antes
+        'gemini-2.5-flash', # Prioridade Gemini 2.5
         'gemini-2.0-flash',      
         'gemini-1.5-flash'
     ]
@@ -76,7 +101,7 @@ with st.sidebar:
                 st.session_state.saldo_conta += valor_cofre
                 st.rerun()
 
-# --- CORPO PRINCIPAL ---
+# --- CHAT PRINCIPAL ---
 st.title("🤖 FinnBot: Assistente Financeiro")
 
 # Container para as mensagens
@@ -87,10 +112,8 @@ with chat_placeholder:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
-# Caixa de pergunta
-prompt = st.chat_input("Como posso ajudar suas finanças hoje?")
-
-if prompt:
+# Entrada de pergunta
+if prompt := st.chat_input("Como posso ajudar suas finanças hoje?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with chat_placeholder.chat_message("user"):
         st.write(prompt)
@@ -113,13 +136,8 @@ if prompt:
                     chat = model.start_chat(history=history_gemini[:-1])
                     response = chat.send_message(f"{instrucoes}\n\nPergunta: {prompt}")
                     resposta = response.text
-                except Exception as e:
+                except Exception:
                     resposta = "Estou ajustando meus circuitos. Tente novamente."
 
         st.write(resposta)
         st.session_state.messages.append({"role": "assistant", "content": resposta})
-
-# --- RODAPÉ ---
-st.markdown("<br><br>", unsafe_allow_html=True) 
-st.divider()
-st.caption("Developed by Felipe Silva.")
