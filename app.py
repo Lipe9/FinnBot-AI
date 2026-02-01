@@ -127,4 +127,8 @@ if prompt := st.chat_input("Como posso ajudar suas finanças hoje?"):
 
         st.write(resposta)
         st.session_state.messages.append({"role": "assistant", "content": resposta})
+        
+        st.divider()
+st.caption("Developed by Felipe Silva.")
+
 
