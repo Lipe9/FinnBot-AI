@@ -4,29 +4,11 @@ import google.generativeai as genai
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="FinnBot AI", page_icon="🏦", layout="centered")
-st.markdown("""
-    <style>
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: transparent;
-        color: gray;
-        text-align: center;
-        padding: 10px;
-        font-size: 12px;
-        z-index: 100;
-    }
-    .stChatInputContainer {
-        bottom: 40px !important;
-    }
-    </style>
-    <div class="footer">
-        <hr style="border: 0.5px solid #333; width: 80%; margin: auto; margin-bottom: 5px;">
-        Developed by Felipe Silva.
-    </div>
-    """, unsafe_allow_html=True)
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+local_css("style.css")
+st.markdown('<div class="footer"><hr style="border: 0.5px solid #333; width: 80%; margin: auto; margin-bottom: 5px;">Developed by Felipe Silva.</div>', unsafe_allow_html=True)
 
 # --- FUNÇÃO DE CONEXÃO ---
 def get_model():
@@ -138,4 +120,5 @@ if prompt := st.chat_input("Como posso ajudar suas finanças hoje?"):
 
         st.write(resposta)
         st.session_state.messages.append({"role": "assistant", "content": resposta})
+
 
