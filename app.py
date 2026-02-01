@@ -8,7 +8,7 @@ def local_css(file_name):
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 local_css("style.css")
-st.markdown('<div class="footer"><hr style="border: 0.5px solid #333; width: 80%; margin: auto; margin-bottom: 5px;">Developed by Felipe Silva.</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer"><hr style="border: 0.5px solid #333; width: 80%; margin: auto; margin-bottom: 5px;">©Developed by Felipe Silva.</div>', unsafe_allow_html=True)
 
 # --- FUNÇÃO DE CONEXÃO ---
 def get_model():
@@ -120,6 +120,7 @@ if prompt := st.chat_input("Como posso ajudar suas finanças hoje?"):
 
         st.write(resposta)
         st.session_state.messages.append({"role": "assistant", "content": resposta})
+
 
 
 
