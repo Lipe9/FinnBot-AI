@@ -1,0 +1,18 @@
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: transparent;
+    color: #888;
+    text-align: center;
+    padding: 10px;
+    font-size: 12px;
+    z-index: 100;
+}
+.stChatInputContainer {
+    bottom: 40px !important;
+}
+[data-testid="stMetricValue"] {
+    color: #00ff7f !important;
+}
